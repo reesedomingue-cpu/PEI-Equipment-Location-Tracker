@@ -1,138 +1,224 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PEI Equipment Tracker</title>
-<style>
-  body { font-family: Arial, sans-serif; padding: 20px; background:#f8f9fa; font-size:1.2rem; }
-  img { max-width: 200px; display:block; margin:0 auto 20px; }
-  form { max-width:500px; margin:0 auto; background:#fff; padding:20px; border-radius:12px; box-shadow:0 0 15px rgba(0,0,0,0.15); }
-  label { display:block; margin-top:15px; font-weight:bold; }
-  input, select, button { width:100%; padding:12px; font-size:1.2rem; margin-top:5px; border-radius:6px; border:1px solid #ccc; box-sizing:border-box; }
-  button { margin-top:20px; background:#d40000; color:#fff; border:none; cursor:pointer; font-size:1.3rem; }
-  button:hover { background:#a80000; }
-  #repairDetailsContainer { display:none; }
-  .hint { text-align:center; margin-bottom:10px; font-size:1rem; color:#444; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PEI Equipment Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 18px;
+      background: #f8f9fa;
+      font-size: 1.15rem;
+    }
+    .wrap {
+      max-width: 560px;
+      margin: 0 auto;
+    }
+    img {
+      max-width: 220px;
+      display: block;
+      margin: 10px auto 16px auto;
+    }
+    .hint {
+      text-align: center;
+      margin-bottom: 12px;
+      font-size: 1rem;
+      color: #333;
+    }
+    form {
+      background: #fff;
+      padding: 18px;
+      border-radius: 14px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.15);
+    }
+    label {
+      display: block;
+      margin-top: 14px;
+      font-weight: bold;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 14px;
+      font-size: 1.2rem;
+      margin-top: 6px;
+      border-radius: 10px;
+      border: 1px solid #cfcfcf;
+      box-sizing: border-box;
+    }
+    input[readonly] {
+      background: #f1f1f1;
+    }
+    button {
+      margin-top: 18px;
+      background: #d40000;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 1.3rem;
+      padding: 16px;
+    }
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    #repairDetailsContainer {
+      display: none;
+    }
+    .small {
+      font-size: 0.95rem;
+      color: #555;
+      margin-top: 8px;
+      text-align: center;
+    }
+  </style>
 </head>
+
 <body>
+  <div class="wrap">
+    <!-- Put the logo file in the SAME folder as index.html -->
+    <img src="e637b7fc-f8fd-42c4-8a7c-5c7be721086e.png" alt="PEI Logo" />
 
-<img src="e637b7fc-f8fd-42c4-8a7c-5c7be721086e.png" alt="PEI Logo">
-<div class="hint">Scan the equipment QR code, then press Submit.</div>
+    <div class="hint">Scan the equipment QR code, then press Submit.</div>
 
-<form id="equipmentForm">
-  <label>Unit Number:</label>
-  <input type="text" id="unitNumber" readonly />
+    <form id="equipmentForm">
+      <label for="unitNumber">Unit Number:</label>
+      <input type="text" id="unitNumber" name="unitNumber" readonly />
 
-  <label>Name (F/L):</label>
-  <input type="text" id="userName" required />
+      <label for="userName">Name (F/L):</label>
+      <input type="text" id="userName" name="userName" placeholder="First Last" required />
 
-  <label>Current Insurance on Equipment? (Y/N):</label>
-  <select id="insurance" required>
-    <option value="">Select</option>
-    <option value="Yes">Yes</option>
-    <option value="No">No</option>
-  </select>
+      <label for="insurance">Current insurance on equipment? (Y/N):</label>
+      <select id="insurance" name="insurance" required>
+        <option value="">Select</option>
+        <option value="Yes">Yes</option>
+        <option value="No">No</option>
+      </select>
 
-  <label>Repair Needed? (Y/N):</label>
-  <select id="repairNeeded" required>
-    <option value="">Select</option>
-    <option value="Yes">Yes</option>
-    <option value="No">No</option>
-  </select>
+      <label for="repairNeeded">Repair needed? (Y/N):</label>
+      <select id="repairNeeded" name="repairNeeded" required>
+        <option value="">Select</option>
+        <option value="Yes">Yes</option>
+        <option value="No">No</option>
+      </select>
 
-  <div id="repairDetailsContainer">
-    <label>If Yes, what?</label>
-    <input type="text" id="repairDetails" placeholder="Describe repair" />
+      <div id="repairDetailsContainer">
+        <label for="repairDetails">If Yes, what?</label>
+        <input type="text" id="repairDetails" name="repairDetails" placeholder="Describe repair needed" />
+      </div>
+
+      <button id="submitBtn" type="submit">Submit</button>
+
+      <div class="small">If location doesn’t prompt, open in Safari/Chrome (not inside a QR scanner app).</div>
+    </form>
   </div>
 
-  <button type="submit">Submit</button>
-</form>
+  <script>
+    // ====== SETTINGS ======
+    const FLOW_URL = "https://defaultf4ae40429a0a4e568a37357921900e.7e.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/247fa41316c04ec49b1a3baa48ee5ec9/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=xpTLQQj1dnUYTJSeZY4blWWErtoEv5YEjwPUYTWj8XY"; // <-- PASTE YOUR FLOW URL HERE
 
-<script>
-  // ✅ Prefill Unit Number from QR URL: ?unit=056
-  const params = new URLSearchParams(window.location.search);
-  const unitInput = document.getElementById("unitNumber");
-  unitInput.value = params.get("unit") || "";
-
-  // If unit is missing, block submit (prevents bad data)
-  if (!unitInput.value) {
-    alert("Missing Unit Number. Scan the equipment QR code again.");
-  }
-
-  // ✅ Show/hide repair details
-  const repairNeededSelect = document.getElementById("repairNeeded");
-  const repairDetailsContainer = document.getElementById("repairDetailsContainer");
-  const repairDetailsInput = document.getElementById("repairDetails");
-
-  repairNeededSelect.addEventListener("change", function () {
-    if (this.value === "Yes") {
-      repairDetailsContainer.style.display = "block";
-      repairDetailsInput.required = true;
-    } else {
-      repairDetailsContainer.style.display = "none";
-      repairDetailsInput.required = false;
-      repairDetailsInput.value = "";
-    }
-  });
-
-  document.getElementById("equipmentForm").addEventListener("submit", async function (e) {
-    e.preventDefault();
+    // ====== PREFILL UNIT FROM QR URL: ?unit=056 ======
+    const params = new URLSearchParams(window.location.search);
+    const unitInput = document.getElementById("unitNumber");
+    unitInput.value = params.get("unit") || "";
 
     if (!unitInput.value) {
       alert("Missing Unit Number. Scan the equipment QR code again.");
-      return;
     }
 
-    if (!navigator.geolocation) {
-      alert("Geolocation not supported on this browser.");
-      return;
-    }
+    // ====== SHOW/HIDE REPAIR DETAILS ======
+    const repairNeededSelect = document.getElementById("repairNeeded");
+    const repairDetailsContainer = document.getElementById("repairDetailsContainer");
+    const repairDetailsInput = document.getElementById("repairDetails");
 
-    navigator.geolocation.getCurrentPosition(
-      async function (position) {
-        const data = {
-          unitNumber: unitInput.value,
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-          name: document.getElementById("userName").value,
-          insurance: document.getElementById("insurance").value,
-          repairNeeded: document.getElementById("repairNeeded").value,
-          repairDetails: repairDetailsInput.value
-        };
+    repairNeededSelect.addEventListener("change", function () {
+      if (this.value === "Yes") {
+        repairDetailsContainer.style.display = "block";
+        repairDetailsInput.required = true;
+      } else {
+        repairDetailsContainer.style.display = "none";
+        repairDetailsInput.required = false;
+        repairDetailsInput.value = "";
+      }
+    });
 
-        try {
-          const response = await fetch("https://defaultf4ae40429a0a4e568a37357921900e.7e.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/247fa41316c04ec49b1a3baa48ee5ec9/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=xpTLQQj1dnUYTJSeZY4blWWErtoEv5YEjwPUYTWj8XY", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data)
-          });
+    // ====== FORM SUBMIT ======
+    const form = document.getElementById("equipmentForm");
+    const submitBtn = document.getElementById("submitBtn");
 
-        let bodyText = "";
-        try { bodyText = await response.text(); } catch (e) {}
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
 
-        if (response.ok) {
-        alert("Submitted successfully!");
-        } else {
-        alert(`Submit failed.\nStatus: ${response.status}\n${bodyText}`);
-        }
-        } catch (err) {
-          alert("Submit error: " + err.message);
-        }
-      },
-      function (err) {
-        // Better error message than [object ...]
-        let msg = "Could not get location.";
-        if (err && err.code === 1) msg = "Location denied. Allow location access and try again.";
-        if (err && err.code === 2) msg = "Location unavailable. Try moving outdoors.";
-        if (err && err.code === 3) msg = "Location timed out. Try again.";
-        alert(msg);
-      },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-    );
-  });
-</script>
+      if (!unitInput.value) {
+        alert("Missing Unit Number. Scan the equipment QR code again.");
+        return;
+      }
 
+      if (!FLOW_URL || FLOW_URL.includes("YOUR_POWER_AUTOMATE_HTTP_URL")) {
+        alert("Flow URL is not set. Paste your Power Automate HTTP POST URL into FLOW_URL.");
+        return;
+      }
+
+      if (!navigator.geolocation) {
+        alert("Geolocation not supported by this browser.");
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Submitting...";
+
+      navigator.geolocation.getCurrentPosition(
+        async function (position) {
+          const data = {
+            unitNumber: unitInput.value,
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            name: document.getElementById("userName").value,
+            insurance: document.getElementById("insurance").value,
+            repairNeeded: document.getElementById("repairNeeded").value,
+            repairDetails: repairDetailsInput.value || ""
+          };
+
+          try {
+            const response = await fetch(FLOW_URL, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(data)
+            });
+
+            // ✅ NEW: show real status + any response text
+            let bodyText = "";
+            try { bodyText = await response.text(); } catch (err) {}
+
+            if (response.ok) {
+              alert("Submitted successfully!");
+              form.reset();
+              repairDetailsContainer.style.display = "none";
+              // keep the unit number after reset
+              unitInput.value = params.get("unit") || "";
+            } else {
+              alert(`Submit failed.\nStatus: ${response.status}\n${bodyText}`);
+            }
+          } catch (err) {
+            alert("Submit error: " + err.message);
+          } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Submit";
+          }
+        },
+        function (err) {
+          let msg = "Could not get location.";
+          if (err && err.code === 1) msg = "Location denied. Allow location access and try again.";
+          if (err && err.code === 2) msg = "Location unavailable. Try moving outdoors.";
+          if (err && err.code === 3) msg = "Location timed out. Try again.";
+          alert(msg);
+
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Submit";
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+      );
+    });
+  </script>
 </body>
 </html>
