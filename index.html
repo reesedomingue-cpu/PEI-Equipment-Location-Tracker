@@ -103,21 +103,20 @@
         };
 
         try {
-          const response = await fetch("https://defaultf4ae40429a0a4e568a37357921900e.7e.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/247fa41316c04ec49b1a3baa48ee5ec9/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=xpTLQQj1dnUYTJSeZY4blWWErtoEv5YEjwPUYTWj8XYL", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data)
+          const response = await fetch("https://defaultf4ae40429a0a4e568a37357921900e.7e.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/247fa41316c04ec49b1a3baa48ee5ec9/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=xpTLQQj1dnUYTJSeZY4blWWErtoEv5YEjwPUYTWj8XY", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
           });
 
-          if (response.ok) {
-            alert("Submitted successfully!");
-            document.getElementById("equipmentForm").reset();
-            repairDetailsContainer.style.display = "none";
-            // keep unit number after reset
-            unitInput.value = params.get("unit") || "";
-          } else {
-            alert("Submit failed. Try again.");
-          }
+        let bodyText = "";
+        try { bodyText = await response.text(); } catch (e) {}
+
+        if (response.ok) {
+        alert("Submitted successfully!");
+        } else {
+        alert(`Submit failed.\nStatus: ${response.status}\n${bodyText}`);
+        }
         } catch (err) {
           alert("Submit error: " + err.message);
         }
