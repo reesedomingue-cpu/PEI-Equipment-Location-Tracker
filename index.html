@@ -5,59 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PEI Equipment Tracker</title>
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    padding: 20px;
-    background-color: #f8f9fa;
-    font-size: 1.2rem;
-  }
-  img {
-    max-width: 200px;
-    display: block;
-    margin: 0 auto 20px auto;
-  }
-  form {
-    max-width: 500px;
-    margin: 0 auto;
-    background: #fff;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 0 15px rgba(0,0,0,0.15);
-  }
-  label {
-    display: block;
-    margin-top: 15px;
-    font-weight: bold;
-  }
-  input, select, button {
-    width: 100%;
-    padding: 12px;
-    font-size: 1.2rem;
-    margin-top: 5px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    box-sizing: border-box;
-  }
-  button {
-    margin-top: 20px;
-    background-color: #d40000;
-    color: white;
-    border: none;
-    cursor: pointer;
-    font-size: 1.3rem;
-  }
-  button:hover {
-    background-color: #a80000;
-  }
-  #repairDetailsContainer {
-    display: none;
-  }
+  body { font-family: Arial, sans-serif; padding: 20px; background:#f8f9fa; font-size:1.2rem; }
+  img { max-width: 200px; display:block; margin:0 auto 20px; }
+  form { max-width:500px; margin:0 auto; background:#fff; padding:20px; border-radius:12px; box-shadow:0 0 15px rgba(0,0,0,0.15); }
+  label { display:block; margin-top:15px; font-weight:bold; }
+  input, select, button { width:100%; padding:12px; font-size:1.2rem; margin-top:5px; border-radius:6px; border:1px solid #ccc; box-sizing:border-box; }
+  button { margin-top:20px; background:#d40000; color:#fff; border:none; cursor:pointer; font-size:1.3rem; }
+  button:hover { background:#a80000; }
+  #repairDetailsContainer { display:none; }
+  .hint { text-align:center; margin-bottom:10px; font-size:1rem; color:#444; }
 </style>
 </head>
 <body>
 
-<!-- PEI Logo -->
 <img src="e637b7fc-f8fd-42c4-8a7c-5c7be721086e.png" alt="PEI Logo">
+<div class="hint">Scan the equipment QR code, then press Submit.</div>
 
 <form id="equipmentForm">
   <label>Unit Number:</label>
@@ -89,76 +51,88 @@
 </form>
 
 <script>
-// --------------------- Prefill Unit Number from QR ---------------------
-function getQueryParam(param) {
-  const urlParams = new URLSearchParams(window.location.search);
-  return urlParams.get(param);
-}
-const unitNumberInput = document.getElementById("unitNumber");
-const unitFromQR = getQueryParam("unit");
-if (unitFromQR) {
-  unitNumberInput.value = unitFromQR;
-}
+  // ✅ Prefill Unit Number from QR URL: ?unit=056
+  const params = new URLSearchParams(window.location.search);
+  const unitInput = document.getElementById("unitNumber");
+  unitInput.value = params.get("unit") || "";
 
-// --------------------- Show/Hide Repair Details ---------------------
-const repairNeededSelect = document.getElementById("repairNeeded");
-const repairDetailsContainer = document.getElementById("repairDetailsContainer");
-
-repairNeededSelect.addEventListener("change", function() {
-  if (this.value === "Yes") {
-    repairDetailsContainer.style.display = "block";
-    document.getElementById("repairDetails").required = true;
-  } else {
-    repairDetailsContainer.style.display = "none";
-    document.getElementById("repairDetails").required = false;
-    document.getElementById("repairDetails").value = "";
-  }
-});
-
-// --------------------- Submit Form & Send to Power Automate ---------------------
-document.getElementById("equipmentForm").addEventListener("submit", async function(e){
-  e.preventDefault();
-
-  if (!navigator.geolocation) {
-    alert("Geolocation not supported!");
-    return;
+  // If unit is missing, block submit (prevents bad data)
+  if (!unitInput.value) {
+    alert("Missing Unit Number. Scan the equipment QR code again.");
   }
 
-  navigator.geolocation.getCurrentPosition(async function(position){
-    const latitude = position.coords.latitude;
-    const longitude = position.coords.longitude;
+  // ✅ Show/hide repair details
+  const repairNeededSelect = document.getElementById("repairNeeded");
+  const repairDetailsContainer = document.getElementById("repairDetailsContainer");
+  const repairDetailsInput = document.getElementById("repairDetails");
 
-    const data = {
-      unitNumber: unitNumberInput.value,
-      latitude: latitude,
-      longitude: longitude,
-      name: document.getElementById("userName").value,
-      insurance: document.getElementById("insurance").value,
-      repairNeeded: document.getElementById("repairNeeded").value,
-      repairDetails: document.getElementById("repairDetails").value
-    };
-
-    try {
-      const response = await fetch("https://defaultf4ae40429a0a4e568a37357921900e.7e.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/247fa41316c04ec49b1a3baa48ee5ec9/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=xpTLQQj1dnUYTJSeZY4blWWErtoEv5YEjwPUYTWj8XY", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-      });
-
-      if (response.ok) {
-        alert("Equipment info submitted successfully!");
-        document.getElementById("equipmentForm").reset();
-        repairDetailsContainer.style.display = "none";
-      } else {
-        alert("Error submitting data.");
-      }
-    } catch (err) {
-      alert("Error submitting data: " + err.message);
+  repairNeededSelect.addEventListener("change", function () {
+    if (this.value === "Yes") {
+      repairDetailsContainer.style.display = "block";
+      repairDetailsInput.required = true;
+    } else {
+      repairDetailsContainer.style.display = "none";
+      repairDetailsInput.required = false;
+      repairDetailsInput.value = "";
     }
-  }, function(err){
-    alert("Could not get location: " + err.message);
   });
-});
+
+  document.getElementById("equipmentForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    if (!unitInput.value) {
+      alert("Missing Unit Number. Scan the equipment QR code again.");
+      return;
+    }
+
+    if (!navigator.geolocation) {
+      alert("Geolocation not supported on this browser.");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async function (position) {
+        const data = {
+          unitNumber: unitInput.value,
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          name: document.getElementById("userName").value,
+          insurance: document.getElementById("insurance").value,
+          repairNeeded: document.getElementById("repairNeeded").value,
+          repairDetails: repairDetailsInput.value
+        };
+
+        try {
+          const response = await fetch("https://defaultf4ae40429a0a4e568a37357921900e.7e.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/247fa41316c04ec49b1a3baa48ee5ec9/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=xpTLQQj1dnUYTJSeZY4blWWErtoEv5YEjwPUYTWj8XYL", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+          });
+
+          if (response.ok) {
+            alert("Submitted successfully!");
+            document.getElementById("equipmentForm").reset();
+            repairDetailsContainer.style.display = "none";
+            // keep unit number after reset
+            unitInput.value = params.get("unit") || "";
+          } else {
+            alert("Submit failed. Try again.");
+          }
+        } catch (err) {
+          alert("Submit error: " + err.message);
+        }
+      },
+      function (err) {
+        // Better error message than [object ...]
+        let msg = "Could not get location.";
+        if (err && err.code === 1) msg = "Location denied. Allow location access and try again.";
+        if (err && err.code === 2) msg = "Location unavailable. Try moving outdoors.";
+        if (err && err.code === 3) msg = "Location timed out. Try again.";
+        alert(msg);
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    );
+  });
 </script>
 
 </body>
